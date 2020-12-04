@@ -26,6 +26,15 @@ const PublicNetworks = {
     etherscan: "https://kovan.etherscan.io/",
     daiAddress: "0xbF7A7169562078c96f0eC1A8aFD6aE50f12e5A99",
     wethAddress: "0xd0A1E359811322d97991E03f863a0C30C2cF029C"
+  },
+  100: {
+    name: "xdai",
+    ethFaucet: "https://xdai-faucet.top/",
+    etherscan: "https://blockscout.com/poa/xdai/",
+    // WXDAI
+    daiAddress: "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d",
+    // WETH on xDAI
+    wethAddress: "0xB303FE5D55e54c05df4cbd0602f1be4cC1489B90"
   }
 };
 

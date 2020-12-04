@@ -1,0 +1,12 @@
+{
+  "ETH/USD": {
+    "address": "0x0000000000000000000000000000000000000000",
+    "isAggregator": true,
+    "jobId": null
+  },
+  "WXDAI/USD": {
+    "address": "0x0000000000000000000000000000000000000000",
+    "isAggregator": true,
+    "jobId": null
+  }
+}
