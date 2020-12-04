@@ -1,7 +1,10 @@
 const Finder = artifacts.require("Finder");
 const ExpiringMultiPartyCreator = artifacts.require("ExpiringMultiPartyCreator");
 const ExpiringMultiPartyLib = artifacts.require("ExpiringMultiPartyLib");
-const AddressWhitelist = artifacts.require("AddressWhitelist");
+
+const ChainlinkPriceOracleAdapter = artifacts.require("ChainlinkPriceOracleAdapter")
+
+const AddressWhitelist = artifacts.require("AddressWhitelist")
 const TokenFactory = artifacts.require("TokenFactory");
 const Timer = artifacts.require("Timer");
 const Registry = artifacts.require("Registry");
@@ -17,6 +20,8 @@ const {
 module.exports = async function(deployer, network, accounts) {
   const keys = getKeysForNetwork(network, accounts);
   const controllableTiming = enableControllableTiming(network);
+
+  const chainlinkOracleAdapter = await ChainlinkPriceOracleAdapter.deployed()
 
   // Deploy CollateralWhitelist.
   const { contract: collateralWhitelist } = await deploy(deployer, network, AddressWhitelist, {
