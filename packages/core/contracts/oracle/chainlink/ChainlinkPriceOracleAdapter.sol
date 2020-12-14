@@ -12,6 +12,11 @@ contract ChainlinkPriceOracleAdapter is OracleInterface, IdentifierWhitelistInte
         bool isAggregator;
         bytes32 jobId;
         bool disabled;
+        uint256 requiredPayment;
+    }
+
+    struct OracleRequest {
+        uint256 time;
     }
 
     struct PriceFeed {
@@ -23,6 +28,7 @@ contract ChainlinkPriceOracleAdapter is OracleInterface, IdentifierWhitelistInte
 
     mapping(bytes32 => PriceFeed) public priceFeeds;
 
+    mapping(bytes32 => OracleRequest) private chainlinkRequestsById;
     mapping(address => bool) private requesters;
 
     modifier onlyRequester() {
@@ -35,8 +41,7 @@ contract ChainlinkPriceOracleAdapter is OracleInterface, IdentifierWhitelistInte
     event OracleRemoved(bytes32 indexed identifier);
 
     constructor() public Ownable() {
-        // TODO(mori) migrate chainlink token as well
-        //setPublicChainlinkToken();
+        setPublicChainlinkToken();
     }
 
     function _getCurrentOracle(bytes32 identifier) internal view returns (OracleData storage) {
@@ -47,6 +52,14 @@ contract ChainlinkPriceOracleAdapter is OracleInterface, IdentifierWhitelistInte
     function _setPrice(bytes32 identifier, uint256 time, int256 price) internal {
         priceFeeds[identifier].priceData[time] = price;
         emit NewPrice(identifier, time, price);
+    }
+
+    function _isOracleForIdentifier(address who, bytes32 identifier) internal view returns (bool) {
+        return priceFeeds[identifier].oracle._address == who;
+    }
+
+    function _getRequestByID(bytes32 id) internal view returns (OracleRequest memory) {
+        return chainlinkRequestsById[id];
     }
     
     /**
@@ -61,10 +74,22 @@ contract ChainlinkPriceOracleAdapter is OracleInterface, IdentifierWhitelistInte
         if (oracle.isAggregator) {
             _setPrice(identifier, time, AggregatorV2V3Interface(oracle._address).latestAnswer());
         } else {
-            // make chainlink request
-            // TODO(mori) Create callback fn
-            revert("NOT IMPLEMENTED");
+            Chainlink.Request memory request = buildChainlinkRequest(oracle.jobId, address(this), this.fulfillPrice.selector);
+            chainlinkRequestsById[request.id] = OracleRequest({
+                identifier: identifier,
+                time: time
+            });
+            sendChainlinkRequestTo(oracle._address, request, oracle.requiredPayment);
         }
+    }
+
+    function fulfillPrice(bytes32 requestID, uint256 price) public {
+        OracleRequest memory request = _getRequestByID(requestID);
+
+        require(_isOracleForIdentifier(msg.sender, request.identifier), "ChainlinkPriceOracleAdapter: Not authorized to respond to this request.");
+        _setPrice(request.identifier, request.time, price);
+        // we don't need the requestID => oracle ref anymore - gas rebate
+        delete chainlinkRequestsById[requestID];
     }
 
     /**
@@ -108,12 +133,13 @@ contract ChainlinkPriceOracleAdapter is OracleInterface, IdentifierWhitelistInte
     }
 
 
-    function addOracle(bytes32 identifier, address oracleAddress, bool isAggregator, bytes32 jobId) public onlyOwner() {
+    function addOracle(bytes32 identifier, address oracleAddress, bool isAggregator, bytes32 jobId, uint256 requiredPayment) public onlyOwner() {
         OracleData memory newOracle = OracleData({
             _address: oracleAddress,
             isAggregator: isAggregator,
             jobId: jobId,
-            disabled: false
+            disabled: false,
+            requiredPayment: requiredPayment
         });
 
         PriceFeed storage feed = priceFeeds[identifier];
@@ -136,7 +162,7 @@ contract ChainlinkPriceOracleAdapter is OracleInterface, IdentifierWhitelistInte
      * @param identifier bytes32 encoding of the string identifier. Eg: BTC/USD.
      * @return bool if the identifier is supported (or not).
      */
-    function isIdentifierSupported(bytes32 identifier) external view override returns (bool) {
+    function isIdentifierSupported(bytes32 identifier) public view override returns (bool) {
         OracleData memory oracle = _getCurrentOracle(identifier);
         return oracle._address != address(0) && !oracle.disabled;
     }

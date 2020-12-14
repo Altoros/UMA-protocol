@@ -34,7 +34,8 @@ const PublicNetworks = {
     // WXDAI
     daiAddress: "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d",
     // WETH on xDAI
-    wethAddress: "0xB303FE5D55e54c05df4cbd0602f1be4cC1489B90"
+    wethAddress: "0xB303FE5D55e54c05df4cbd0602f1be4cC1489B90",
+    adminSafeAddress: "0x82b43fD550D2F767B4E73aD764954F7f8c8A58C6"
   }
 };
 
