@@ -1,13 +1,13 @@
-import {
+const {
     contract as clContract,
     helpers as h,
     matchers,
     setup,
     wallet,
-  } from '@chainlink/test-helpers'
-import { assert } from 'chai'
+  } = require('@chainlink/test-helpers')
+const { assert } = require('chai')
 
-import web3 from 'web3'
+const web3 = require('web3')
 
 const ChainlinkPriceOracleAdapter = artifacts.require("ChainlinkPriceOracleAdapter")
 const MockChainlinkOracle = artifacts.require("MockChainlinkOracle")
