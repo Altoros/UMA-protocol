@@ -3,6 +3,7 @@
   "version": "1.2.0",
   "description": "UMA smart contracts and unit tests",
   "dependencies": {
+    "@chainlink/contracts": "^0.0.11",
     "@truffle/contract": "^4.2.20",
     "@uma/common": "^1.1.0",
     "@uma/core-1-1-0": "npm:@uma/core@1.1.0"
